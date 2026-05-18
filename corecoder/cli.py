@@ -1,4 +1,4 @@
-"""Interactive REPL - the user-facing terminal interface."""
+"""交互式 REPL - 面向用户的终端界面。"""
 
 import sys
 import os
@@ -38,7 +38,7 @@ def main():
     args = _parse_args()
     config = Config.from_env()
 
-    # CLI args override env vars
+    # CLI 参数覆盖环境变量
     if args.model:
         config.model = args.model
     if args.base_url:
@@ -72,12 +72,12 @@ def main():
     )
     agent = Agent(llm=llm, max_context_tokens=config.max_context_tokens)
 
-    # resume saved session
+    # 恢复已保存的会话
     if args.resume:
         loaded = load_session(args.resume)
         if loaded:
             agent.messages, loaded_model = loaded
-            # restore the model from the saved session unless overridden by CLI
+            # 除非被 CLI 覆盖，否则从保存的会话恢复模型
             if not args.model:
                 agent.llm.model = loaded_model
                 config.model = loaded_model
@@ -86,17 +86,17 @@ def main():
             console.print(f"[red]Session '{args.resume}' not found.[/red]")
             sys.exit(1)
 
-    # one-shot mode
+    # 单次执行模式
     if args.prompt:
         _run_once(agent, args.prompt)
         return
 
-    # interactive REPL
+    # 交互式 REPL
     _repl(agent, config)
 
 
 def _run_once(agent: Agent, prompt: str):
-    """Non-interactive: run one prompt and exit."""
+    """非交互模式：运行一次提示后退出。"""
     def on_token(tok):
         print(tok, end="", flush=True)
 
@@ -108,7 +108,9 @@ def _run_once(agent: Agent, prompt: str):
 
 
 def _repl(agent: Agent, config: Config):
-    """Interactive read-eval-print loop."""
+    """交互式读取-求值-打印循环。"""
+
+    # 打印启动面板
     console.print(Panel(
         f"[bold]CoreCoder[/bold] v{__version__}\n"
         f"Model: [cyan]{config.model}[/cyan]"
@@ -120,7 +122,7 @@ def _repl(agent: Agent, config: Config):
     hist_path = os.path.expanduser("~/.corecoder_history")
     history = FileHistory(hist_path)
 
-    # Enter submits, Escape+Enter inserts a newline (for pasting code blocks etc.)
+    # Enter 提交，Escape+Enter 插入换行（用于粘贴代码块等）
     kb = KeyBindings()
 
     @kb.add("enter")
@@ -133,6 +135,7 @@ def _repl(agent: Agent, config: Config):
 
     while True:
         try:
+            # 接收输入信息
             user_input = pt_prompt(
                 "You > ",
                 history=history,
@@ -147,7 +150,18 @@ def _repl(agent: Agent, config: Config):
         if not user_input:
             continue
 
-        # built-in commands
+        """ 
+        内置命令
+        /help	显示帮助
+        /reset	清空对话历史
+        /model	查看当前模型
+        /model gpt-4	运行时切换模型
+        /tokens	查看 Token 用量
+        /compact	压缩上下文
+        /save	保存当前会话
+        /diff	显示修改过的文件
+        /sessions	列出已保存会话
+        """
         if user_input.lower() in ("quit", "exit", "/quit", "/exit"):
             break
         if user_input == "/help":
@@ -208,7 +222,7 @@ def _repl(agent: Agent, config: Config):
                     console.print(f"  [cyan]{s['id']}[/cyan] ({s['model']}, {s['saved_at']}) {s['preview']}")
             continue
 
-        # call the agent
+        # 调用代理
         streamed: list[str] = []
 
         def on_token(tok):
@@ -221,16 +235,16 @@ def _repl(agent: Agent, config: Config):
         try:
             response = agent.chat(user_input, on_token=on_token, on_tool=on_tool)
             if streamed:
-                print()  # newline after streamed tokens
+                print()  # 获取流式回复后新建一行
             else:
-                # response wasn't streamed (came after tool calls)
+                # 未得到流式回复 (在工具调用后才获取)
                 console.print(Markdown(response))
         except KeyboardInterrupt:
             console.print("\n[yellow]Interrupted.[/yellow]")
         except Exception as e:
             console.print(f"\n[red]Error: {e}[/red]")
 
-
+# 获取/命令列表
 def _show_help():
     console.print(Panel(
         "[bold]Commands:[/bold]\n"
@@ -252,7 +266,8 @@ def _show_help():
         border_style="dim",
     ))
 
-
+# 工具参数格式化
+# {"pattern": "*.py", "path": "./src"}  ->  pattern='*.py', path='./src'
 def _brief(kwargs: dict, maxlen: int = 80) -> str:
     s = ", ".join(f"{k}={repr(v)[:40]}" for k, v in kwargs.items())
     return s[:maxlen] + ("..." if len(s) > maxlen else "")

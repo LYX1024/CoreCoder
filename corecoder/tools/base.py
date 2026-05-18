@@ -1,22 +1,27 @@
-"""Base class for all tools."""
+"""所有工具的基础类。"""
 
 from abc import ABC, abstractmethod
 
 
 class Tool(ABC):
-    """Minimal tool interface. Subclass this to add new capabilities."""
+    """极简工具接口。继承此类以添加新能力。"""
 
+    """
+        工具名称
+        工具描述
+        工具参数
+    """
     name: str
     description: str
-    parameters: dict  # JSON Schema for the function args
+    parameters: dict  # 函数参数的 JSON 模板语法
 
     @abstractmethod
     def execute(self, **kwargs) -> str:
-        """Run the tool and return a text result."""
+        """运行工具并返回文本结果。"""
         ...
 
     def schema(self) -> dict:
-        """OpenAI function-calling schema."""
+        """OpenAI 的function calling。"""
         return {
             "type": "function",
             "function": {

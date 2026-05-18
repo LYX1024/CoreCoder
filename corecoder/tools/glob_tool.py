@@ -1,4 +1,4 @@
-"""File pattern matching."""
+"""文件模式匹配。"""
 
 from pathlib import Path
 from .base import Tool
@@ -7,8 +7,8 @@ from .base import Tool
 class GlobTool(Tool):
     name = "glob"
     description = (
-        "Find files matching a glob pattern. "
-        "Supports ** for recursive matching (e.g. '**/*.py')."
+        "查找匹配 glob 模式的文件。"
+        "支持 ** 递归匹配（例如 '**/*.py'）。"
     )
     parameters = {
         "type": "object",
@@ -32,10 +32,11 @@ class GlobTool(Tool):
                 return f"Error: {path} is not a directory"
 
             hits = list(base.glob(pattern))
-            # sort by mtime, newest first
+            # 按 mtime 排序，最新的在前
             hits.sort(key=lambda p: p.stat().st_mtime if p.exists() else 0, reverse=True)
 
             total = len(hits)
+            # 截断前100条
             shown = hits[:100]
             lines = [str(h) for h in shown]
             result = "\n".join(lines)

@@ -1,4 +1,4 @@
-"""File reading with line numbers."""
+"""带行号的文件读取。"""
 
 from pathlib import Path
 from .base import Tool
@@ -7,8 +7,8 @@ from .base import Tool
 class ReadFileTool(Tool):
     name = "read_file"
     description = (
-        "Read a file's contents with line numbers. "
-        "Always read a file before editing it."
+        "读取文件内容并显示行号。"
+        "编辑文件前务必先读取。"
     )
     parameters = {
         "type": "object",

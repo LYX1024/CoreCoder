@@ -1,4 +1,4 @@
-"""File creation / overwrite."""
+"""文件创建 / 覆写。"""
 
 from pathlib import Path
 from .base import Tool
@@ -8,8 +8,8 @@ from .edit import _changed_files
 class WriteFileTool(Tool):
     name = "write_file"
     description = (
-        "Create a new file or completely overwrite an existing one. "
-        "For small edits to existing files, prefer edit_file instead."
+        "创建新文件或完全覆写现有文件。"
+        "对于现有文件的小修改，请优先使用 edit_file。"
     )
     parameters = {
         "type": "object",

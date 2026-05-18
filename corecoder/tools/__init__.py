@@ -1,4 +1,4 @@
-"""Tool registry."""
+"""工具注册表。"""
 
 from .bash import BashTool
 from .read import ReadFileTool
@@ -13,14 +13,14 @@ ALL_TOOLS = [
     ReadFileTool(),
     WriteFileTool(),
     EditFileTool(),
-    GlobTool(),
-    GrepTool(),
+    GlobTool(), # 文件名匹配
+    GrepTool(), # 文件内容搜索
     AgentTool(),
 ]
 
 
 def get_tool(name: str):
-    """Look up a tool by name."""
+    """按名称查找工具。"""
     for t in ALL_TOOLS:
         if t.name == name:
             return t

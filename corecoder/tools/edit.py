@@ -1,9 +1,9 @@
-"""Search-and-replace file editing (Claude Code's key innovation).
+"""搜索替换式文件编辑（Claude Code 的关键创新）。
 
-The core idea: instead of sending whole-file rewrites or line-number patches,
-the LLM specifies an *exact* substring to find and its replacement. The
-substring must appear exactly once in the file, which eliminates ambiguity
-and makes edits safe and reviewable.
+核心思想：LLM 不发送整个文件重写或行号补丁，
+而是指定一个*精确*的子串来查找及其替换内容。
+子串必须在文件中恰好出现一次，这消除了歧义，
+使编辑安全且可审查。
 """
 
 import difflib
@@ -11,16 +11,16 @@ from pathlib import Path
 
 from .base import Tool
 
-# track files changed this session for /diff
+# 追踪本次会话中修改的文件，用于 /diff 命令
 _changed_files: set[str] = set()
 
 
 class EditFileTool(Tool):
     name = "edit_file"
     description = (
-        "Edit a file by replacing an exact string match. "
-        "old_string must appear exactly once in the file for safety. "
-        "Include enough surrounding context to ensure uniqueness."
+        "通过精确字符串匹配编辑文件。"
+        "为安全起见，old_string 必须在文件中恰好出现一次。"
+        "包含足够的周围上下文以确保唯一性。"
     )
     parameters = {
         "type": "object",
@@ -44,29 +44,33 @@ class EditFileTool(Tool):
     def execute(self, file_path: str, old_string: str, new_string: str) -> str:
         try:
             p = Path(file_path).expanduser().resolve()
+            # Path.expanduser()  — 把路径开头的 ~ 换成用户家目录，如 "~/doc" -> "C:/Users/xxx/doc"
+            # Path.resolve()     — 把相对路径换成绝对路径，去掉 ".." 和 "."，如 "./foo/../bar" -> "D:/xx/bar"
             if not p.exists():
                 return f"Error: {file_path} not found"
 
             content = p.read_text()
+            # str.count(sub)  — 统计 sub 在字符串中出现的次数，不重叠计数
             occurrences = content.count(old_string)
 
             if occurrences == 0:
                 preview = content[:500] + ("..." if len(content) > 500 else "")
                 return (
-                    f"Error: old_string not found in {file_path}.\n"
-                    f"File starts with:\n{preview}"
+                    f"错误：在 {file_path} 中未找到 old_string。\n"
+                    f"文件开头为：\n{preview}"
                 )
             if occurrences > 1:
                 return (
-                    f"Error: old_string appears {occurrences} times in {file_path}. "
-                    f"Include more surrounding lines to make it unique."
+                    f"错误：old_string 在 {file_path} 中出现了 {occurrences} 次。"
+                    f"请包含更多周围行以确保唯一性。"
                 )
 
+            # 替换内容
             new_content = content.replace(old_string, new_string, 1)
             p.write_text(new_content)
             _changed_files.add(str(p))
 
-            # generate a unified diff so the user/LLM can see exactly what changed
+            # 生成统一差异格式，让用户/LLM 能看到具体变化
             diff = _unified_diff(content, new_content, str(p))
             return f"Edited {file_path}\n{diff}"
         except Exception as e:
@@ -74,16 +78,24 @@ class EditFileTool(Tool):
 
 
 def _unified_diff(old: str, new: str, filename: str, context: int = 3) -> str:
-    """Generate a compact unified diff between old and new file content."""
+    """生成旧文件和新文件内容之间的紧凑统一差异。"""
     old_lines = old.splitlines(keepends=True)
     new_lines = new.splitlines(keepends=True)
+    # difflib.unified_diff(old, new, fromfile, tofile, n=context)
+    #   比较两段文本的差异，输出类 git diff 的统一格式：
+    #   --- a/file.py       ← 旧文件标记
+    #   +++ b/file.py       ← 新文件标记
+    #   @@ -行号,范围 +行号,范围 @@
+    #   -被删的行          ← 前面带 - 的表示被删除
+    #   +新增的行          ← 前面带 + 的表示被添加
+    #   n=context 参数控制每个差异块上下各保留几行上下文，默认 3 行
     diff = difflib.unified_diff(
         old_lines, new_lines,
         fromfile=f"a/{filename}", tofile=f"b/{filename}",
         n=context,
     )
     result = "".join(diff)
-    # truncate enormous diffs
+    # 截断过大的 diff
     if len(result) > 3000:
-        result = result[:2500] + "\n... (diff truncated)\n"
+        result = result[:2500] + "\n...（差异已截断）\n"
     return result
