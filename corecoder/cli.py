@@ -275,6 +275,6 @@ def _show_help():
 
 # 工具参数格式化
 # {"pattern": "*.py", "path": "./src"}  ->  pattern='*.py', path='./src'
-def _brief(kwargs: dict, maxlen: int = 80) -> str:
-    s = ", ".join(f"{k}={repr(v)[:40]}" for k, v in kwargs.items())
+def _brief(kwargs: dict, maxlen: int = 300) -> str:
+    s = ", ".join(f"{k}={repr(v)[:200]}" for k, v in kwargs.items())
     return s[:maxlen] + ("..." if len(s) > maxlen else "")

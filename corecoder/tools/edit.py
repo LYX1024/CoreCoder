@@ -49,7 +49,7 @@ class EditFileTool(Tool):
             if not p.exists():
                 return f"Error: {file_path} not found"
 
-            content = p.read_text()
+            content = p.read_text(encoding="utf-8")
             # str.count(sub)  — 统计 sub 在字符串中出现的次数，不重叠计数
             occurrences = content.count(old_string)
 
@@ -67,7 +67,7 @@ class EditFileTool(Tool):
 
             # 替换内容
             new_content = content.replace(old_string, new_string, 1)
-            p.write_text(new_content)
+            p.write_text(new_content, encoding="utf-8")
             _changed_files.add(str(p))
 
             # 生成统一差异格式，让用户/LLM 能看到具体变化

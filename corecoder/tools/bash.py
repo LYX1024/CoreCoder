@@ -117,7 +117,7 @@ class BashTool(Tool):
         "required": ["command"],
     }
 
-    def execute(self, command: str, timeout: int = 120) -> str:
+    def execute(self, command: str, timeout: int = 300) -> str:
         global _cwd
         # 安全检查
         warning = _check_dangerous(command)
@@ -135,6 +135,8 @@ class BashTool(Tool):
                 text=True,
                 timeout=timeout,
                 cwd=cwd,
+                encoding="utf-8", # 设置编码
+                errors="ignore"  # 或 "replace"
             )
 
             # 追踪 cd 命令，使下一个命令在正确位置运行

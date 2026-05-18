@@ -133,7 +133,10 @@ class SpecializedAgentTool(Tool):
         )
 
         try:
-            result = sub.chat(task)
+            # 从父 agent 透传回调，让子 agent 的流式输出对用户可见
+            on_token = getattr(parent, '_current_on_token', None)
+            on_tool = getattr(parent, '_current_on_tool', None)
+            result = sub.chat(task, on_token=on_token, on_tool=on_tool)
             if len(result) > 5000:
                 result = result[:4500] + "\n...（子代理输出已截断）"
             return f"[{self.name} completed]\n{result}"

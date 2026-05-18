@@ -77,27 +77,33 @@ class Agent:
 
             self.messages.append(resp.message)
 
-            # 工具调用 -> 执行（多个时并行，类似 Claude Code 的StreamingToolExecutor，并发运行独立工具）
-            if len(resp.tool_calls) == 1:
-                # 单个工具执行
-                tc = resp.tool_calls[0]
-                if on_tool:
-                    on_tool(tc.name, tc.arguments)
-                result = self._exec_tool(tc)
-                self.messages.append({
-                    "role": "tool",
-                    "tool_call_id": tc.id,
-                    "content": result,
-                })
-            else:
-                # 多个工具调用的并行执行
-                results = self._exec_tools_parallel(resp.tool_calls, on_tool)
-                for tc, result in zip(resp.tool_calls, results):
+            # 把回调函数存入实例，供 SpecializedAgentTool 透传给子 agent
+            self._current_on_token = on_token
+            self._current_on_tool = on_tool
+            try:
+                if len(resp.tool_calls) == 1:
+                    # 单个工具执行
+                    tc = resp.tool_calls[0]
+                    if on_tool:
+                        on_tool(tc.name, tc.arguments)
+                    result = self._exec_tool(tc)
                     self.messages.append({
                         "role": "tool",
                         "tool_call_id": tc.id,
                         "content": result,
                     })
+                else:
+                    # 多个工具调用的并行执行
+                    results = self._exec_tools_parallel(resp.tool_calls, on_tool)
+                    for tc, result in zip(resp.tool_calls, results):
+                        self.messages.append({
+                            "role": "tool",
+                            "tool_call_id": tc.id,
+                            "content": result,
+                        })
+            finally:
+                self._current_on_token = None
+                self._current_on_tool = None
 
             # 如果工具输出较大则压缩
             self.context.maybe_compress(self.messages, self.llm)
