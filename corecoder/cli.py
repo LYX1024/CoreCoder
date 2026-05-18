@@ -15,6 +15,8 @@ from .agent import Agent
 from .llm import LLM, LiteLLM
 from .config import Config
 from .session import save_session, load_session, list_sessions
+from .tools import ALL_TOOLS
+from .multi_agents import SPECIALIZED_AGENTS
 from . import __version__
 
 console = Console()
@@ -70,7 +72,12 @@ def main():
         temperature=config.temperature,
         max_tokens=config.max_tokens,
     )
-    agent = Agent(llm=llm, max_context_tokens=config.max_context_tokens)
+    # 此处给主agent的工具列表有 工具列表+已定义的子agent
+    agent = Agent(
+        llm=llm,
+        tools=ALL_TOOLS + SPECIALIZED_AGENTS,
+        max_context_tokens=config.max_context_tokens,
+    )
 
     # 恢复已保存的会话
     if args.resume:

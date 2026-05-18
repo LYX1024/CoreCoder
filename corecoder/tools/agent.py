@@ -50,7 +50,7 @@ class AgentTool(Tool):
         sub = Agent(
             llm=parent.llm,
             # 工具列表参数显式禁止传入agent，禁止递归代理
-            tools=[t for t in parent.tools if t.name != "agent"], 
+            tools=[t for t in parent.tools if t.name != "agent"],
             max_context_tokens=parent.context.max_tokens,
             max_rounds=20,
         )
@@ -63,3 +63,79 @@ class AgentTool(Tool):
             return f"[Sub-agent completed]\n{result}"
         except Exception as e:
             return f"Sub-agent error: {e}"
+
+
+class SpecializedAgentTool(Tool):
+    """可配置的专业子代理工具。每个实例是一个独立角色的 agent。
+
+    用法：
+        review_agent = SpecializedAgentTool(
+            name="review",
+            description="审查代码质量",
+            system_prompt="你是代码审查专家...",
+            tools=[GlobTool(), GrepTool(), ReadFileTool()],
+            model="deepseek-chat",       # 可选，默认复用主 agent 模型
+        )
+    """
+
+    def __init__(
+        self,
+        name: str,
+        description: str,
+        system_prompt: str,
+        tools: list[Tool] | None = None,
+        model: str | None = None,
+        max_rounds: int = 20,
+    ):
+        self.name = name
+        self.description = description
+        self._system_prompt = system_prompt
+        self._tools = tools or []
+        self._model = model
+        self._max_rounds = max_rounds
+        self._parent_agent = None
+        self.parameters = {
+            "type": "object",
+            "properties": {
+                "task": {
+                    "type": "string",
+                    "description": f"交给 {name} 的任务描述",
+                },
+            },
+            "required": ["task"],
+        }
+
+    def execute(self, task: str) -> str:
+        if self._parent_agent is None:
+            return f"Error: {self.name} agent not initialized (no parent agent)"
+
+        from ..agent import Agent
+        from ..llm import LLM
+
+        parent = self._parent_agent
+
+        # 如果指定了不同模型，创建独立 LLM（继承父 agent 的 API 凭据）
+        if self._model:
+            llm = LLM(
+                model=self._model,
+                api_key=parent.llm.client.api_key if hasattr(parent.llm, 'client') else getattr(parent.llm, 'api_key', ''),
+                base_url=parent.llm.client.base_url if hasattr(parent.llm, 'client') else getattr(parent.llm, 'base_url', None),
+            )
+        else:
+            llm = parent.llm
+
+        sub = Agent(
+            llm=llm,
+            tools=self._tools,
+            max_context_tokens=parent.context.max_tokens,
+            max_rounds=self._max_rounds,
+            custom_prompt=self._system_prompt,
+        )
+
+        try:
+            result = sub.chat(task)
+            if len(result) > 5000:
+                result = result[:4500] + "\n...（子代理输出已截断）"
+            return f"[{self.name} completed]\n{result}"
+        except Exception as e:
+            return f"{self.name} agent error: {e}"

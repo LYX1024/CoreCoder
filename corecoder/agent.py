@@ -14,7 +14,7 @@ import concurrent.futures
 from .llm import LLM
 from .tools import ALL_TOOLS, get_tool
 from .tools.base import Tool
-from .tools.agent import AgentTool
+from .tools.agent import AgentTool, SpecializedAgentTool
 from .prompt import system_prompt
 from .context import ContextManager
 
@@ -26,17 +26,18 @@ class Agent:
         tools: list[Tool] | None = None,
         max_context_tokens: int = 128_000,
         max_rounds: int = 50,
+        custom_prompt: str | None = None,
     ):
         self.llm = llm
         self.tools = tools if tools is not None else ALL_TOOLS
         self.messages: list[dict] = []
         self.context = ContextManager(max_tokens=max_context_tokens)
         self.max_rounds = max_rounds
-        self._system = system_prompt(self.tools)
+        self._system = custom_prompt or system_prompt(self.tools)
 
         # 将创建子agent封装为一个tool，在此处指定子agent的父为self
         for t in self.tools:
-            if isinstance(t, AgentTool):
+            if isinstance(t, (AgentTool, SpecializedAgentTool)):
                 t._parent_agent = self
 
     # 拼接系统prompt与用户请求上下文
@@ -105,7 +106,8 @@ class Agent:
 
     def _exec_tool(self, tc) -> str:
         """执行单个工具调用，返回结果字符串。"""
-        tool = get_tool(tc.name)
+        # 优先从 self.tools 查找（支持专业 agent 工具），再回退到注册表
+        tool = next((t for t in self.tools if t.name == tc.name), None) or get_tool(tc.name)
         if tool is None:
             return f"Error: unknown tool '{tc.name}'"
         try:
