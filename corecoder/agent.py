@@ -27,13 +27,17 @@ class Agent:
         max_context_tokens: int = 128_000,
         max_rounds: int = 50,
         custom_prompt: str | None = None,
+        skill_instructions: list[tuple[str, str]] | None = None,
     ):
         self.llm = llm
         self.tools = tools if tools is not None else ALL_TOOLS
         self.messages: list[dict] = []
         self.context = ContextManager(max_tokens=max_context_tokens)
         self.max_rounds = max_rounds
-        self._system = custom_prompt or system_prompt(self.tools)
+        if custom_prompt:
+            self._system = custom_prompt
+        else:
+            self._system = system_prompt(self.tools, skills=skill_instructions)
 
         # 将创建子agent封装为一个tool，在此处指定子agent的父为self
         for t in self.tools:

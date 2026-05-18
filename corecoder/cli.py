@@ -17,6 +17,7 @@ from .config import Config
 from .session import save_session, load_session, list_sessions
 from .tools import ALL_TOOLS
 from .multi_agents import SPECIALIZED_AGENTS
+from .skills import load_skills
 from . import __version__
 
 console = Console()
@@ -73,10 +74,12 @@ def main():
         max_tokens=config.max_tokens,
     )
     # 此处给主agent的工具列表有 工具列表+已定义的子agent
+    skill_instructions = load_skills()
     agent = Agent(
         llm=llm,
         tools=ALL_TOOLS + SPECIALIZED_AGENTS,
         max_context_tokens=config.max_context_tokens,
+        skill_instructions=skill_instructions,
     )
 
     # 恢复已保存的会话

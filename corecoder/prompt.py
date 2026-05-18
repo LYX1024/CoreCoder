@@ -4,10 +4,19 @@ import os
 import platform
 
 
-def system_prompt(tools) -> str:
+def system_prompt(tools, skills: list[tuple[str, str]] | None = None) -> str:
     cwd = os.getcwd()
     tool_list = "\n".join(f"- **{t.name}**: {t.description}" for t in tools)
     uname = platform.uname()
+
+    # Skills 章节
+    skills_section = ""
+    if skills:
+        names = "、".join(name for name, _ in skills)
+        parts = [f"# Skills（已加载：{names}）\n"]
+        for name, content in skills:
+            parts.append(f"### {name}\n{content}")
+        skills_section = "\n\n" + "\n\n".join(parts)
 
     return f"""\
 你是 CoreCoder，运行在用户终端中的 AI 编码助手。
@@ -43,4 +52,4 @@ def system_prompt(tools) -> str:
 9. **不要重复操作。** 执行工具调用前先回顾最近 5 条消息。如果发现自己正在重复同样的调用（相同的工具+相似参数），立即停止并汇报当前进展，不要继续循环。
 10. **不要过度测试。** 写文件或改文件一次完成，不要反复写入相同内容来"验证"。信任工具的执行结果。
 11. **用完即走。** 任务完成后直接返回纯文本结果，不要追加多余的测试调用。
-"""
+{skills_section}"""
