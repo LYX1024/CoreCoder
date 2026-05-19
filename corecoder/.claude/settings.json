@@ -12,7 +12,10 @@
       "Bash(python -c \"import openai; print\\(f'openai SDK version: {openai.__version__}'\\)\")",
       "Bash(python -c \"import ast; ast.parse\\(open\\('corecoder/agent.py', 'r', encoding='utf-8'\\).read\\(\\)\\); ast.parse\\(open\\('corecoder/prompt.py', 'r', encoding='utf-8'\\).read\\(\\)\\); print\\('Syntax OK'\\)\")",
       "Bash(python -c \"import ast; ast.parse\\(open\\('corecoder/agent.py', 'r', encoding='utf-8'\\).read\\(\\)\\); print\\('Syntax OK'\\)\")",
-      "Bash(python -c \"import ast; ast.parse\\(open\\('d:/PythonProject/CoreCoder/corecoder/prompt.py', 'r', encoding='utf-8'\\).read\\(\\)\\); print\\('Syntax OK'\\)\")"
+      "Bash(python -c \"import ast; ast.parse\\(open\\('d:/PythonProject/CoreCoder/corecoder/prompt.py', 'r', encoding='utf-8'\\).read\\(\\)\\); print\\('Syntax OK'\\)\")",
+      "Bash(python -c \"import tree_sitter; print\\('tree-sitter available:', tree_sitter.__version__\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('d:/PythonProject/CoreCoder/corecoder/tools/tree_sitter_tool.py', 'r', encoding='utf-8'\\).read\\(\\)\\); print\\('Syntax OK'\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('d:/PythonProject/CoreCoder/corecoder/tools/__init__.py', 'r', encoding='utf-8'\\).read\\(\\)\\); ast.parse\\(open\\('d:/PythonProject/CoreCoder/corecoder/tools/tree_sitter_tool.py', 'r', encoding='utf-8'\\).read\\(\\)\\); print\\('Syntax OK'\\)\")"
     ]
   }
 }

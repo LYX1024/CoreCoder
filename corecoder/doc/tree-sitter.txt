@@ -1,0 +1,29 @@
+新增文件
+tools/tree_sitter_tool.py — 包含：
+
+组件	    说明
+AstCache	磁盘缓存，存源代码字节 + 预计算索引，git hash 校验变化
+GitParseTool	结构搜索工具。type:function_def 列出所有函数，name:函数名 精准定位
+StructReadTool	结构读取工具。focus=function:函数名 只读取函数体，省 token
+
+
+缓存机制
+缓存目录：~/.corecoder/ast_cache/
+缓存键：文件路径 SHA256
+校验：git hash-object 优先 → SHA256 降级
+过期：7 天自动清理
+存储内容：(file_hash, source_bytes, precomputed_index)
+
+tree_sitter.Tree 是 C 扩展对象无法 pickle，改为缓存源代码字节
+缓存命中时直接用缓存的 source bytes 重新解析（避免磁盘 I/O）
+预计算的函数/类定义索引随缓存存储，二次查询无需重新执行 tree-sitter query
+
+语言支持
+语言	函数节点	类节点
+Python	function_definition	class_definition
+Java	method_declaration	class_declaration
+扩展点	在 _LANGUAGE_MAP + _QUERY_TEMPLATES 添加即可	
+
+
+安装tree-sitter本体及语言
+pip install tree-sitter tree-sitter-python tree-sitter-java 2>&1 | tail -5

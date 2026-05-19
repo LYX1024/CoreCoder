@@ -7,6 +7,7 @@ from .edit import EditFileTool
 from .glob_tool import GlobTool
 from .grep import GrepTool
 from .agent import AgentTool
+from .tree_sitter_tool import CodeQueryTool, StructReadTool
 
 ALL_TOOLS = [
     BashTool(),
@@ -15,6 +16,8 @@ ALL_TOOLS = [
     EditFileTool(),
     GlobTool(), # 文件名匹配
     GrepTool(), # 文件内容搜索
+    CodeQueryTool(), # 语法树结构搜索
+    StructReadTool(), # 语法树结构读取
     AgentTool(),
 ]
 
