@@ -56,7 +56,10 @@ class AgentTool(Tool):
         )
 
         try:
-            result = sub.chat(task)
+            # 从父 agent 透传回调
+            on_token = getattr(parent, '_current_on_token', None)
+            on_tool = getattr(parent, '_current_on_tool', None)
+            result = sub.chat(task, on_token=on_token, on_tool=on_tool)
             # 截断长结果以避免撑爆父代理的上下文
             if len(result) > 5000:
                 result = result[:4500] + "\n...（子代理输出已截断）"
