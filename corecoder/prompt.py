@@ -42,6 +42,20 @@ def system_prompt(tools, skills: list[tuple[str, str]] | None = None) -> str:
 
 # 规则
 1. **先读后改。** 修改文件前务必先读取，确认内容后再操作。
+    阶段一 — 项目探索（找文件、看结构）：
+    - 用 bash/glob 列出目录树或匹配文件
+    - 用 read_file 看配置文件（pyproject.toml、__init__.py 等）
+    - 读 README 了解项目定位
+
+    阶段二 — 代码钻取（读具体代码）：
+    必须先经过以下两步，**禁止直接用 read_file 读代码文件**：
+    ① code_query — 查找目标函数/类定义所在行
+    ② struct_read — 按名称读取该函数/类的完整代码
+    若 struct_read 不够，再调 read_file 阅读上下文。
+    
+    找函数/类定义 → code_query
+    读函数/类代码  → struct_read
+    **禁止直接用 grep + read_file 的组合替代 code_query + struct_read。**
 2. **小修改用 edit_file。** 针对性编辑用 edit_file；只有新文件或完全重写才用 write_file。
 3. **验证你的工作。** 修改后运行相关测试或命令确认正确性。
 4. **保持简洁。** 多用代码少用文字。只解释必要的部分。
