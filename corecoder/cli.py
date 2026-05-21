@@ -3,6 +3,7 @@
 import sys
 import os
 import argparse
+import atexit
 
 from rich.console import Console
 from rich.markdown import Markdown
@@ -75,12 +76,40 @@ def main():
     )
     # 此处给主agent的工具列表有 工具列表+已定义的子agent
     skill_instructions = load_skills()
+
+    # MCP 工具初始化
+    mcp_tools: list = []
+    mcp_manager = None
+    if config.mcp_enabled and config.mcp_servers:
+        try:
+            from .tools.mcp import MCPManager
+
+            mcp_manager = MCPManager(config.mcp_servers)
+            mcp_tools = mcp_manager.initialize_all()
+            errors = mcp_manager.get_errors()
+            for server_name, err in errors:
+                console.print(f"[yellow]MCP [{server_name}]: {err}[/yellow]")
+            if mcp_tools:
+                tool_names = [t.name for t in mcp_tools]
+                console.print(f"[dim]MCP tools loaded: {', '.join(tool_names)}[/dim]")
+        except Exception as e:
+            console.print(f"[yellow]MCP initialization failed: {e}[/yellow]")
+
     agent = Agent(
         llm=llm,
-        tools=ALL_TOOLS + SPECIALIZED_AGENTS,
+        # 工具列表 + 子分工agent + mcp工具列表
+        tools=ALL_TOOLS + SPECIALIZED_AGENTS + mcp_tools,
         max_context_tokens=config.max_context_tokens,
         skill_instructions=skill_instructions,
     )
+
+    # 注册退出清理：关闭 MCP 连接
+    if mcp_manager is not None:
+
+        def _cleanup_mcp(mgr=mcp_manager):
+            mgr.close_all()
+
+        atexit.register(_cleanup_mcp)
 
     # 恢复已保存的会话
     if args.resume:

@@ -15,7 +15,18 @@
       "Bash(python -c \"import ast; ast.parse\\(open\\('d:/PythonProject/CoreCoder/corecoder/prompt.py', 'r', encoding='utf-8'\\).read\\(\\)\\); print\\('Syntax OK'\\)\")",
       "Bash(python -c \"import tree_sitter; print\\('tree-sitter available:', tree_sitter.__version__\\)\")",
       "Bash(python -c \"import ast; ast.parse\\(open\\('d:/PythonProject/CoreCoder/corecoder/tools/tree_sitter_tool.py', 'r', encoding='utf-8'\\).read\\(\\)\\); print\\('Syntax OK'\\)\")",
-      "Bash(python -c \"import ast; ast.parse\\(open\\('d:/PythonProject/CoreCoder/corecoder/tools/__init__.py', 'r', encoding='utf-8'\\).read\\(\\)\\); ast.parse\\(open\\('d:/PythonProject/CoreCoder/corecoder/tools/tree_sitter_tool.py', 'r', encoding='utf-8'\\).read\\(\\)\\); print\\('Syntax OK'\\)\")"
+      "Bash(python -c \"import ast; ast.parse\\(open\\('d:/PythonProject/CoreCoder/corecoder/tools/__init__.py', 'r', encoding='utf-8'\\).read\\(\\)\\); ast.parse\\(open\\('d:/PythonProject/CoreCoder/corecoder/tools/tree_sitter_tool.py', 'r', encoding='utf-8'\\).read\\(\\)\\); print\\('Syntax OK'\\)\")",
+      "Bash(python -c \"from mcp import ClientSession; print\\(f'mcp SDK available: {ClientSession}'\\)\")",
+      "Bash(ls -la \"d:/PythonProject/CoreCoder/corecoder/mcp/\" 2>/dev/null; echo \"---\"; cat \"C:/Users/25351/.corecoder/mcp.json\" 2>/dev/null || echo \"No mcp.json config found\")",
+      "Read(//c/Users/25351/.corecoder/**)",
+      "Bash(mkdir -p \"d:/PythonProject/CoreCoder/doc\")",
+      "Bash(rm \"d:/PythonProject/CoreCoder/PLAN.md\" && echo \"deleted\" || echo \"not found\")",
+      "Bash(timeout 5 python corecoder/mcp_servers/weather_server.py)",
+      "Bash(echo \"Exit code: $?\")"
+    ],
+    "additionalDirectories": [
+      "d:\\PythonProject\\CoreCoder\\doc",
+      "d:\\PythonProject\\CoreCoder"
     ]
   }
 }
