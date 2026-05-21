@@ -7,7 +7,7 @@
 - 多 Agent 编排（plan → execute → review 协作流程）
 - Skills 支持（`skills/*.md` 自动注入系统提示词）
 - Tree-sitter 语法树工具（`code_query` / `struct_read`，精确定位函数/类定义）
-- MCP 工具集成（weather 天气查询、vision 多模态视觉、stt 语音输入）
+- MCP 工具集成
 - Windows 危险命令保护
 
 ## 可选依赖
