@@ -189,7 +189,7 @@ def _repl(agent: Agent, config: Config):
         if not user_input:
             continue
 
-        """ 
+        """
         内置命令
         /help	显示帮助
         /reset	清空对话历史
@@ -200,6 +200,7 @@ def _repl(agent: Agent, config: Config):
         /save	保存当前会话
         /diff	显示修改过的文件
         /sessions	列出已保存会话
+        /stt	语音输入（麦克风→文字）
         """
         if user_input.lower() in ("quit", "exit", "/quit", "/exit"):
             break
@@ -260,6 +261,35 @@ def _repl(agent: Agent, config: Config):
                 for s in sessions:
                     console.print(f"  [cyan]{s['id']}[/cyan] ({s['model']}, {s['saved_at']}) {s['preview']}")
             continue
+        if user_input == "/stt":
+            console.print("[cyan] 正在录音（停顿 2 秒自动结束）...[/cyan]")
+            console.print("[dim]按 Ctrl+C 取消[/dim]")
+            try:
+                import speech_recognition as sr
+                r = sr.Recognizer()
+                r.energy_threshold = 300
+                r.dynamic_energy_threshold = True
+                r.pause_threshold = 2.0
+                with sr.Microphone() as source:
+                    r.adjust_for_ambient_noise(source, duration=0.5)
+                    audio = r.listen(source, timeout=10, phrase_time_limit=60)
+                console.print("[cyan] 识别中...[/cyan]")
+                text = r.recognize_google(audio, language="zh-CN")
+                console.print(f"[green] {text}[/green]")
+                # 用识别结果替代用户输入
+                user_input = text.strip()
+                if not user_input:
+                    continue
+                # 继续往下走，不 continue，直接进入 agent 处理
+            except sr.WaitTimeoutError:
+                console.print("[yellow]未检测到语音输入[/yellow]")
+                continue
+            except ImportError:
+                console.print("[yellow]SpeechRecognition 未安装，执行: pip install SpeechRecognition[/yellow]")
+                continue
+            except Exception as e:
+                console.print(f"[yellow]语音识别失败：{e}[/yellow]")
+                continue
 
         # 调用代理
         streamed: list[str] = []
@@ -296,6 +326,7 @@ def _show_help():
         "  /diff          Show files modified this session\n"
         "  /save          Save session to disk\n"
         "  /sessions      List saved sessions\n"
+        "  /stt           Voice input (microphone → text)\n"
         "  quit           Exit CoreCoder\n"
         "\n"
         "[bold]Input:[/bold]\n"

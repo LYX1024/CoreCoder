@@ -7,6 +7,10 @@
     "vision": {
       "command": "python",
       "args": ["mcp_servers/vision_server.py"]
+    },
+    "stt": {
+      "command": "python",
+      "args": ["mcp_servers/stt_server.py"]
     }
   }
 }

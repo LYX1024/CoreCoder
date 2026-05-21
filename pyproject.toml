@@ -40,6 +40,7 @@ packages = ["corecoder"]
 
 [project.optional-dependencies]
 litellm = ["litellm>=1.60.0,<2.0.0"]
+stt = ["SpeechRecognition>=3.16"]
 dev = ["pytest>=7.0"]
 
 [project.scripts]
