@@ -3,6 +3,10 @@
     "weather": {
       "command": "python",
       "args": ["mcp_servers/weather_server.py"]
+    },
+    "vision": {
+      "command": "python",
+      "args": ["mcp_servers/vision_server.py"]
     }
   }
 }
