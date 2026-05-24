@@ -24,8 +24,14 @@ pip install tree-sitter tree-sitter-python tree-sitter-java
 # 多模态视觉识别（Vision MCP 服务器）
 # 需要 DashScope API Key，在 .env 中配置 VISION_API_KEY
 
-# 语音输入（/stt 命令 + STT MCP 服务器）
-pip install SpeechRecognition
+# 语音输入（/stt 命令）
+# 主服务：Google Web Speech API（免费、在线、无需 Key）
+pip install SpeechRecognition pyaudio
+# 降级服务：Vosk 离线识别（无需联网），额外安装：
+pip install vosk
+# 并下载中文模型：https://alphacephei.com/vosk/models/vosk-model-small-cn-0.22.zip
+# 解压至 corecoder/resources/vosk-model-small-cn-0.22/
+# .env 中配置：STT_MODEL_PATH="resources/vosk-model-small-cn-0.22"
 
 # LiteLLM 后端的额外提供者支持
 pip install corecoder[litellm]

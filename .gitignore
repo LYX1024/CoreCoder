@@ -1,17 +1,13 @@
-__pycache__/
-*.py[cod]
-*$py.class
-*.egg-info/
-dist/
-build/
-.eggs/
-*.egg
+# Vosk 离线语音模型（约 42MB，可自行下载）
+corecoder/resources/vosk-model-small-cn-0.22/
+
+# 环境变量（含 API Key）
 .env
-.venv/
-venv/
-.mypy_cache/
-.ruff_cache/
-.corecoder_history
-.DS_Store
-dist/
-.pytest_cache/
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+
+# 会话存档
+.corecoder/

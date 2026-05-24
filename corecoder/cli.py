@@ -274,18 +274,24 @@ def _repl(agent: Agent, config: Config):
                     r.adjust_for_ambient_noise(source, duration=0.5)
                     audio = r.listen(source, timeout=10, phrase_time_limit=60)
                 console.print("[cyan] 识别中...[/cyan]")
+
+                # 优先 Google Web Speech，降级 Vosk
                 text = r.recognize_google(audio, language="zh-CN")
-                console.print(f"[green] {text}[/green]")
-                # 用识别结果替代用户输入
-                user_input = text.strip()
-                if not user_input:
+                if not text:
+                    text = _stt_vosk(audio)
+                text = text.strip()
+
+                if text:
+                    console.print(f"[green] {text}[/green]")
+                    user_input = text
+                else:
+                    console.print("[yellow]未能识别语音内容[/yellow]")
                     continue
-                # 继续往下走，不 continue，直接进入 agent 处理
             except sr.WaitTimeoutError:
                 console.print("[yellow]未检测到语音输入[/yellow]")
                 continue
             except ImportError:
-                console.print("[yellow]SpeechRecognition 未安装，执行: pip install SpeechRecognition[/yellow]")
+                console.print("[yellow]SpeechRecognition 未安装[/yellow]")
                 continue
             except Exception as e:
                 console.print(f"[yellow]语音识别失败：{e}[/yellow]")
@@ -312,6 +318,30 @@ def _repl(agent: Agent, config: Config):
             console.print("\n[yellow]Interrupted.[/yellow]")
         except Exception as e:
             console.print(f"\n[red]Error: {e}[/red]")
+
+# ── Vosk 离线语音识别 ──────────────────────────────────────
+def _stt_vosk(audio_data) -> str | None:
+    """用 Vosk 离线识别语音（无需联网）。"""
+    import os, json
+    from pathlib import Path
+
+    model_rel = os.getenv("STT_MODEL_PATH", "")
+    if not model_rel:
+        return None
+    model_path = (Path(__file__).parent / model_rel).resolve()
+    if not model_path.is_dir():
+        return None
+
+    try:
+        from vosk import Model, KaldiRecognizer
+        model = Model(str(model_path))
+        rec = KaldiRecognizer(model, 16000)
+        rec.AcceptWaveform(bytes(audio_data.get_raw_data(convert_rate=16000, convert_width=2)))
+        result = json.loads(rec.FinalResult())
+        return result.get("text", "").strip() or None
+    except Exception:
+        return None
+
 
 # 获取/命令列表
 def _show_help():
