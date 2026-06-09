@@ -75,7 +75,7 @@ def main():
         max_tokens=config.max_tokens,
     )
     # 此处给主agent的工具列表有 工具列表+已定义的子agent
-    skill_instructions = load_skills()
+    skill_instructions, _ = load_skills(llm=llm)
 
     # MCP 工具初始化
     mcp_tools: list = []

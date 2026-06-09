@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "skills": {
+    "python-dev": {
+      "hash": "df3fbd07823dca6a",
+      "summary": "Python 开发规范",
+      "updated_at": "2026-06-09 14:10:06"
+    }
+  }
+}

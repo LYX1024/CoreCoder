@@ -13,9 +13,16 @@ def system_prompt(tools, skills: list[tuple[str, str]] | None = None) -> str:
     skills_section = ""
     if skills:
         names = "、".join(name for name, _ in skills)
+        # 判断是否为路由模式：内容长度小于 80 视为摘要
+        is_route = any(len(c) < 80 for _, c in skills)
         parts = [f"# Skills（已加载：{names}）\n"]
+        if is_route:
+            parts.append("以下为技能摘要，完整内容可通过 read_file(\"skills/<技能名>.md\") 读取：\n")
         for name, content in skills:
-            parts.append(f"### {name}\n{content}")
+            if is_route:
+                parts.append(f"- **{name}**: {content}")
+            else:
+                parts.append(f"### {name}\n{content}")
         skills_section = "\n\n" + "\n\n".join(parts)
 
     return f"""\
